@@ -1,0 +1,7 @@
+Contributions:
+
+* Alberto Pennino <alberto.pennino@inf.ethz.ch>: Research and backend developement.
+* Thomas Steinmann <thomas.steinmann@inf.ethz.ch>: Frontend and API developement.
+* Marc Willhaus <marc.willhaus@inf.ethz.ch>: Frontend developement.
+* Clara Labrador-Fernandez <claramaria.fernandezlabrador@inf.ethz.ch>: Supervision.
+

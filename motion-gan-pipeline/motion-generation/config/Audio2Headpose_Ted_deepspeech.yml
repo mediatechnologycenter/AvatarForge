@@ -1,0 +1,6 @@
+experiment:
+  dataroot: /mnt/
+  dataset_mode: deepspeech
+  dataset_names: TED384-v2
+  fps: 25
+  name: Audio2Headpose_Ted_deepspeech

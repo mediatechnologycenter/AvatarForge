@@ -1,0 +1,22 @@
+program: train.py
+method: random
+metric:
+  goal: minimize
+  name: metrics_combined
+command:
+  - ${env}
+  - ${interpreter}
+  - ${program}
+  - "-c"
+  - "config/train.yml"
+  - ${args}
+
+parameters:
+  lr: 
+    values: [0.000001, 0.00001, 0.0001, 0.001]
+  lr_disc:
+    values: [0.000001, 0.00001, 0.0001, 0.001]
+  batch_size: 
+    values: [1, 2, 4, 8]
+  optimizer:
+    values: ['adam', 'sgd']

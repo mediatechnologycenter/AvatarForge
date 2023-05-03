@@ -1,0 +1,42 @@
+project: video-synth/ImageToImage
+entity: apennino
+program: train_temporal.py
+method: grid
+metric:
+  goal: minimize
+  name: metrics_combined
+command:
+  - ${env}
+  - ${interpreter}
+  - ${program}
+  - "-c"
+  - "config/train_temporal.yml"
+  - "--checkpoints_dir"
+  - "/mnt/full_pipeline/checkpoints/Alberto"
+  - "--input_train_root_dir"
+  - "/mnt/full_pipeline/input_data/video/Alberto/edges"
+  - "--output_train_root_dir"
+  - "/mnt/full_pipeline/input_data/video/Alberto/cropped"
+  - "--input_val_root_dir"
+  - "/mnt/full_pipeline/input_data/video/Alberto/edges_val"
+  - "--output_val_root_dir"
+  - "/mnt/full_pipeline/input_data/video/Alberto/cropped_val"
+  - "--height"
+  - "720"
+  - "--width"
+  - "405"
+  - ${args}
+
+parameters:
+  steps_train_video_discr: 
+    values: [1, 2, 5]
+
+  loss_gan_video_weight: 
+    values: [0.1, 1, 10]
+  
+  lr: 
+    values: [0.001, 0.01]
+
+  lr_decay_steps: 
+    values: [20, 30]
+  

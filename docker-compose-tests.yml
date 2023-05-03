@@ -1,0 +1,69 @@
+version: "3.9"
+services:
+  backend:
+    image: avatar-backend-v2-debug
+    container_name: avatar-backend-v2-debug
+    environment:
+      - MOCK_BACKEND=False
+      - AUTH_ENABLED=False
+      - CORS_ALLOW_ORIGINS=localhost,localhost:80,localhost:8080,localhost:8081,http://localhost,http://localhost:80,http://localhost:8080,http://localhost:8081
+    restart: "no"
+    command:
+      [
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "--start-directory",
+        "avatar_backend_api/tests"
+      ]
+
+  neural-voice-model:
+    image: neural-voice-backend-debug
+    container_name: neural-voice-backend-debug
+    environment:
+      - MOCK_BACKEND=False
+      - AUTH_ENABLED=False
+      - STATIC_INPUT_FILES=Jennifer_355_9415.mp4,Jennifer_355_9415.wav # Only download the smaller of the two avatars
+      - FEATURE_FILES=Jennifer_355_9415.tar.gz # Only download the smaller of the two avatars
+      - CORS_ALLOW_ORIGINS=localhost,localhost:80,localhost:8080,localhost:8081,http://localhost,http://localhost:80,http://localhost:8080,http://localhost:8081
+    restart: "no"
+    # Uncomment the following line in order to run the neural-voice-model integration tests instead
+    command:
+      [
+        "conda",
+        "run",
+        "--no-capture-output",
+        "-n",
+        "base",
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "--start-directory",
+        "neural_voice_backend_api/tests"
+      ]
+
+  motion-gan-model:
+    image: motion-gan-backend-debug
+    container_name: motion-gan-backend-debug
+    environment:
+      - MOCK_BACKEND=False
+      - AUTH_ENABLED=False
+      - CORS_ALLOW_ORIGINS=localhost,localhost:80,localhost:8080,localhost:8081,http://localhost,http://localhost:80,http://localhost:8080,http://localhost:8081
+    restart: "no"
+    command:
+      [
+        "conda",
+        "run",
+        "--no-capture-output",
+        "-n",
+        "base",
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "--start-directory",
+        "motion_gan_backend_api/tests"
+      ]
+    # command: tail -f /dev/null

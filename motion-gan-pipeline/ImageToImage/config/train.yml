@@ -1,0 +1,52 @@
+
+# image network input size
+width: 320
+height: 320
+
+# model parameters
+use_discriminator: false #was true 
+# use_video_discriminator: true 
+lr_disc: 0.0001
+
+# training parameters
+num_epochs: 50
+lr: 0.001
+lr_decay_steps: 20
+optimizer: adam
+num_steps: 100000
+
+# network parameters
+num_input_channels: 1
+
+# dataloader parameters
+num_workers: 16
+batch_size: 2
+
+# loss functions
+loss_names: [l1_perceptual_loss, perceptual_loss_vgg]
+loss_weights: [100.0, 10.0]
+
+# # loss
+# loss_names: [l1_perceptual_loss]
+# loss_weights: [100.0]
+# loss_names: [perceptual_loss_vgg]
+# loss_weights: [1.0]
+
+# metric functions
+metric_names: [mean_absolute_error, mean_squared_error, structual_similarity_index_measure, peak_signal_to_noise_ratio, frechet_inception_distance]
+metric_weights: [1.0, 0.0, 0.0, 0.0, 0.0]
+
+# data directories and dataset type
+input_train_root_dir: /input_images_train
+output_train_root_dir: /output_images_train
+label_train_root_dir: /labels_train
+input_val_root_dir: /input_images_test
+output_val_root_dir: /output_images_test
+label_val_root_dir: /labels_test
+dataset_type: CustomDataset
+
+# saving training progress
+checkpoints_dir: ./checkpoints/
+save_every: 10
+log_every: 200
+save_val_images: true

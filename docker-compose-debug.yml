@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  backend:
+    image: avatar-backend-v2-debug
+    container_name: avatar-backend-v2-debug
+    env_file:
+      - .env
+      - debug.env
+
+  neural-voice-model:
+    image: neural-voice-backend-debug
+    container_name: neural-voice-backend-debug
+    env_file:
+      - .env
+      - debug.env
+
+    command:
+      ["conda", "run", "--no-capture-output", "-n", "base", "gunicorn", "-c", "gunicorn.conf.py", "--log-level", "debug", "--chdir", "./neural_voice_backend_api", "-k", "uvicorn.workers.UvicornWorker", "app:app"]
+
+  motion-gan-model:
+    image: motion-gan-backend-debug
+    container_name: motion-gan-backend-debug
+    env_file:
+      - .env
+      - debug.env
+    command:
+      ["conda", "run", "--no-capture-output", "-n", "base", "gunicorn", "-c", "gunicorn.conf.py", "--log-level", "debug", "--chdir", "./motion_gan_backend_api", "-k", "uvicorn.workers.UvicornWorker", "app:app"]

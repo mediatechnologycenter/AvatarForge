@@ -1,0 +1,6 @@
+experiment:
+  dataroot: /mnt/
+  dataset_mode: deepspeech
+  dataset_names: MTC
+  fps: 25
+  name: Audio2Headpose_Ted

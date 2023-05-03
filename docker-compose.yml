@@ -1,0 +1,94 @@
+version: "3.9"
+services:
+  backend:
+    image: avatar-backend
+    container_name: avatar-backend-v2
+    build:
+      context: avatar-api
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    volumes:
+      - backend-db-dir:/tmp/tinyDB
+      - ./data/avatar/input_data/audio:/tmp/avatar/input_data/audio
+      - ./data/avatar/output_data/videos:/tmp/avatar/output_data/videos
+    restart: unless-stopped
+
+  neural-voice-model:
+    image: neural-voice-backend
+    container_name: neural-voice-backend
+    build:
+      context: .
+      dockerfile: Dockerfile-neural-voice
+    healthcheck:
+      test: [ "CMD-SHELL", "test -s `which nvidia-smi` && nvidia-smi || exit 1" ]
+      start_period: 1s
+      interval: 20s
+      timeout: 5s
+      retries: 2
+    ports:
+      - "5001:5000"
+    env_file:
+      - .env
+    volumes:
+      - ./data/neuralVoice/input_data:/tmp/neuralVoice/input_data                   # Static files
+      - ./data/neuralVoice/output_data:/tmp/neuralVoice/output_data                 # Static files
+      - ./data/neuralVoice/input_data/audio:/tmp/neuralVoice/input_data/audio       # Model input
+      - ./data/neuralVoice/output_data/videos:/tmp/neuralVoice/output_data/videos   # Model output
+      - neural-voice-torch-hub:/root/.cache/torch/hub                               # External model cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+    restart: unless-stopped
+
+  motion-gan-model:
+    image: motion-gan-backend
+    container_name: motion-gan-backend
+    build:
+      context: .
+      dockerfile: Dockerfile-motion-gan
+    healthcheck:
+      test: [ "CMD-SHELL", "test -s `which nvidia-smi` && nvidia-smi || exit 1" ]
+      start_period: 1s
+      interval: 20s
+      timeout: 5s
+      retries: 2
+    ports:
+      - "5002:5000"
+    env_file:
+      - .env
+    volumes:
+      - ./data/motionGan/checkpoints:/tmp/motionGan/checkpoints                   # Model weights
+      - ./data/motionGan/input_data/video:/tmp/motionGan/input_data/video         # Input data
+      - ./data/motionGan/input_data/audio:/tmp/motionGan/input_data/audio         # Model input
+      - ./data/motionGan/output_data/videos:/tmp/motionGan/output_data/videos     # Model output
+      - motion-gan-torch-hub:/root/.cache/torch/hub                               # External model cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+    restart: unless-stopped
+    shm_size: '2gb'
+
+volumes:
+  backend-db-dir: { }
+  # backend-audio-input-dir: { }
+  # backend-video-output-dir: { }
+  # neural-voice-input-data: { }
+  # neural-voice-output-data: { }
+  # neural-voice-input-audio: { }
+  # neural-voice-output-video: { }
+  neural-voice-torch-hub: { }
+  # motion-gan-checkpoints: { }
+  # motion-gan-input-video: { }
+  # motion-gan-input-audio: { }
+  # motion-gan-output-video: { }
+  motion-gan-torch-hub: { }

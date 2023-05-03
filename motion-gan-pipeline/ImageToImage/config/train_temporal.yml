@@ -1,0 +1,45 @@
+
+# image network input size
+width: 320
+height: 320
+
+# model parameters
+use_discriminator: false 
+# use_discriminator: true 
+
+# video discriminator
+use_video_discriminator: true 
+steps_train_video_discr: 1
+lr_disc: 0.001
+loss_gan_video_weight: 1
+
+# training parameters
+num_epochs: 40
+lr: 0.001
+lr_decay_steps: 20
+optimizer: adam
+num_steps: 100000
+
+# network parameters
+num_input_channels: 1
+
+# dataloader parameters
+num_workers: 16
+batch_size: 8
+
+# loss functions
+loss_names: [l1_perceptual_loss, perceptual_loss_vgg]
+loss_weights: [100.0, 10.0]
+
+# metric functions
+metric_names: [mean_absolute_error, mean_squared_error, structual_similarity_index_measure, peak_signal_to_noise_ratio, frechet_inception_distance]
+metric_weights: [1.0, 0.0, -1.0, 0.0, 0.0]
+
+# data directories and dataset type
+dataset_type: CustomDataset
+
+# saving training progress
+save_every: 20
+log_every: 200
+save_train_images: true
+save_val_images: true

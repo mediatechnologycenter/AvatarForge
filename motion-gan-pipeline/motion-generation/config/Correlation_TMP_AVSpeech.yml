@@ -1,0 +1,6 @@
+experiment:
+  dataroot: /mnt/
+  dataset_mode: emotion
+  dataset_names: TMP_AVSpeech
+  fps: 25
+  name: Correlation_TMP_AVSpeech

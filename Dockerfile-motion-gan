@@ -1,0 +1,89 @@
+FROM nvidia/cuda:11.4.1-base-ubuntu20.04 as base
+ENV DEBIAN_FRONTEND noninteractive
+
+ENV PATH /opt/conda/bin:$PATH
+
+# Update & install packages
+RUN apt-get -qq update --fix-missing && \
+    apt-get -qq install -y bzip2 ca-certificates wget curl git build-essential && \
+    apt-get -qq clean && \
+    rm -rf /var/lib/apt/lists/*
+
+SHELL ["/bin/bash", "-c"]
+WORKDIR /app
+
+# Install miniconda
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-py38_4.12.0-Linux-x86_64.sh -O ~/miniconda.sh && \
+    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
+    rm ~/miniconda.sh && \
+    /opt/conda/bin/conda clean --quiet -tipsy && \
+    ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
+    echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
+    echo "conda activate base" >> ~/.bashrc
+
+# Set python env vars
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+ENV FORCE_CUDA 1
+ENV PYTORCH_CUDA_ALLOC_CONF max_split_size_mb:512
+
+RUN apt-get -qq update && \
+    apt-get -qq install -y python3-opencv libsm6 libxext6 && \
+    apt-get -qq clean && \
+    rm -rf /var/lib/apt/lists/*
+
+FROM base as backend
+WORKDIR /app
+
+### deepspeech ###
+RUN conda create -n deepspeech python=3.7
+# Make run command use the new environment
+SHELL ["conda", "run", "-n", "deepspeech", "/bin/bash", "-c"]
+
+RUN conda install pysoundfile -c conda-forge && \
+  pip install torch==1.9.1+cu111 torchvision==0.10.1+cu111 torchaudio==0.9.1 -f https://download.pytorch.org/whl/torch_stable.html && \
+  conda install x264=='1!152.20180717' ffmpeg=4.0.2 -c conda-forge
+
+COPY requirements_deepspeech.txt .
+RUN pip install -r requirements_deepspeech.txt
+
+##############################################
+
+### pyenv ###
+RUN conda create -n pyenv python=3.9
+
+# Make run command use the new environment
+SHELL ["conda", "run", "-n", "pyenv", "/bin/bash", "-c"]
+
+RUN conda install pysoundfile -c conda-forge && \
+    conda install pytorch=1.13.0 torchvision torchaudio pytorch-cuda=11.6 -c pytorch -c nvidia && \
+    conda install -c fvcore -c iopath -c conda-forge fvcore iopath && \
+    conda install x264=='1!152.20180717' ffmpeg=4.0.2 -c conda-forge && \
+    conda install pytorch3d -c pytorch3d
+    
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+# Make run command use the new environment
+SHELL ["conda", "run", "-n", "base", "/bin/bash", "-c"]
+
+COPY requirements.api.txt .
+RUN pip install -r requirements.api.txt
+
+COPY avatar-api ./avatar-api
+RUN pip install ./avatar-api --use-feature=in-tree-build && \
+    rm -rf avatar-api
+
+# continue
+COPY motion-gan-pipeline/GFPGAN ./GFPGAN
+COPY motion-gan-pipeline/preprocessing ./preprocessing
+COPY motion-gan-pipeline/motion-generation ./motion-generation
+COPY motion-gan-pipeline/ImageToImage ./ImageToImage
+
+COPY motion-gan-pipeline/gunicorn.conf.py .
+COPY motion-gan-pipeline/motion_gan_backend_api ./motion_gan_backend_api
+COPY motion-gan-pipeline/full_pipeline* ./
+COPY motion-gan-pipeline/*.py ./
+
+CMD [ "conda", "run", "--no-capture-output", "-n", "base", "gunicorn", "-c", "gunicorn.conf.py", "--chdir", "./motion_gan_backend_api", "-k", "uvicorn.workers.UvicornWorker", "app:app" ]

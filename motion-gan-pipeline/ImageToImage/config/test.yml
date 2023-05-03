@@ -1,0 +1,23 @@
+# mode
+mode: test # val or test
+
+# image network input size
+width: 320
+height: 320
+num_input_channels: 1
+
+# dataloader parameters
+num_workers: 1
+batch_size: 1
+
+# metric functions
+metric_names: [mean_absolute_error, mean_squared_error, structual_similarity_index_measure, peak_signal_to_noise_ratio, frechet_inception_distance]
+metric_weights: [1.0, 0.0, 0.0, 0.0, 0.0]
+
+# data directories and dataset type
+input_test_root_dir: /input_images_test
+input_val_root_dir: /input_images_test
+output_val_root_dir: /output_images_test
+label_val_root_dir: /labels_test
+dataset_type: CustomDataset
+
